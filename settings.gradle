@@ -1,4 +1,3 @@
-
 /*
  * DynmapSponge
  *
@@ -17,5 +16,4 @@
  * limitations under the License.
  */
 
-group = pluginGroup
-version = pluginVersion
+include "dynmap-api", "dynmap"

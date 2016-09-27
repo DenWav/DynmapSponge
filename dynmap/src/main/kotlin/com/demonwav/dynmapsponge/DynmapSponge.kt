@@ -27,7 +27,6 @@ import com.demonwav.dynmapsponge.util.getBiomeNames
 import com.demonwav.dynmapsponge.util.getBlockMaterialMap
 import com.demonwav.dynmapsponge.util.getBlockNames
 import com.google.inject.Inject
-import org.dynmap.DynmapCommonAPI
 import org.dynmap.DynmapCommonAPIListener
 import org.dynmap.DynmapCore
 import org.dynmap.MapManager
@@ -37,12 +36,15 @@ import org.dynmap.modsupport.ModSupportImpl
 import org.slf4j.Logger
 import org.spongepowered.api.Sponge
 import org.spongepowered.api.config.DefaultConfig
+import org.spongepowered.api.entity.living.player.Player
 import org.spongepowered.api.event.Listener
 import org.spongepowered.api.event.game.state.GameInitializationEvent
 import org.spongepowered.api.event.game.state.GamePreInitializationEvent
 import org.spongepowered.api.event.game.state.GameStoppingEvent
 import org.spongepowered.api.plugin.Plugin
 import org.spongepowered.api.plugin.PluginContainer
+import org.spongepowered.api.text.serializer.TextSerializers
+import org.spongepowered.api.world.Location
 import org.spongepowered.api.world.World
 import java.nio.file.Path
 import java.util.HashMap
@@ -58,7 +60,7 @@ const val version = "1.0-SNAPSHOT"
     description = "Dynmap implementation for Sponge",
     authors = arrayOf("DemonWav")
 )
-class DynmapSponge : DynmapCommonAPI {
+class DynmapSponge : DynmapAPI {
 
     @Inject
     private lateinit var logger: Logger
@@ -214,6 +216,48 @@ class DynmapSponge : DynmapCommonAPI {
         currentTick++
 
         core.serverTick(tps)
+    }
+
+    // Dynmap Sponge API
+    override fun triggerRenderOfVolume(l0: Location<World>, l1: Location<World>): Int {
+        return core.triggerRenderOfVolume(l0.extent.name, Math.min(l0.blockX, l1.blockX), Math.min(l0.blockY, l1.blockY),
+            Math.min(l0.blockZ, l1.blockZ), Math.max(l0.blockX, l1.blockX), Math.max(l0.blockY, l1.blockY), Math.max(l0.blockZ, l1.blockZ))
+    }
+
+    override fun setPlayerVisibility(player: Player, isVisible: Boolean) {
+        core.setPlayerVisiblity(player.name, isVisible)
+    }
+
+    override fun getPlayerVisibility(player: Player): Boolean {
+        return core.getPlayerVisbility(player.name)
+    }
+
+    override fun postPlayerMessageToWeb(player: Player, message: String) {
+        core.postPlayerMessageToWeb(
+            player.name,
+            TextSerializers.LEGACY_FORMATTING_CODE.serialize(player.displayNameData.displayName().get()),
+            message
+        )
+    }
+
+    override fun postPlayerJoinQuitToWeb(player: Player, isJoin: Boolean) {
+        core.postPlayerJoinQuitToWeb(
+            player.name,
+            TextSerializers.LEGACY_FORMATTING_CODE.serialize(player.displayNameData.displayName().get()),
+            isJoin
+        )
+    }
+
+    override fun getDynmapVersion(): String {
+        return version
+    }
+
+    override fun assertPlayerInvisibility(player: Player, isInvisible: Boolean, plugin: Any) {
+        core.assertPlayerInvisibility(player.name, isInvisible, Sponge.getPluginManager().fromInstance(plugin).get?.name ?: return)
+    }
+
+    override fun assertPlayerVisibility(player: Player, isVisible: Boolean, plugin: Any) {
+        core.assertPlayerVisibility(player.name, isVisible, Sponge.getPluginManager().fromInstance(plugin).get?.name ?: return)
     }
 
     // Dynmap common API (just pass-through to core)

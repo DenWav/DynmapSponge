@@ -1,4 +1,3 @@
-
 /*
  * DynmapSponge
  *
@@ -17,5 +16,9 @@
  * limitations under the License.
  */
 
-group = pluginGroup
-version = pluginVersion
+package com.demonwav.dynmapsponge;
+
+public final class DynmapCauses {
+    public static final String SOURCE = "source";
+    public static final String NAME = "name";
+}
