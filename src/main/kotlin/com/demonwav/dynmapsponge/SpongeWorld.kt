@@ -18,7 +18,6 @@
 
 package com.demonwav.dynmapsponge
 
-import com.demonwav.dynmapsponge.get
 import org.dynmap.DynmapChunk
 import org.dynmap.DynmapLocation
 import org.dynmap.DynmapWorld

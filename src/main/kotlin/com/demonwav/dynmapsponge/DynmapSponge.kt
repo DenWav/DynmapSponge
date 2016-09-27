@@ -77,7 +77,7 @@ class DynmapSponge : DynmapCommonAPI {
     private var lastSpongeWorld: SpongeWorld? = null
 
     // TPS calculator
-    private var tps = 20.0
+    var tps = 20.0
     private var lastTick = 0L
     private var perTickLimit = 0L
     private var currentTickStartTime = 0L

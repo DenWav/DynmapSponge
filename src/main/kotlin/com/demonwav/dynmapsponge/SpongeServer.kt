@@ -24,107 +24,155 @@ import org.dynmap.common.DynmapListenerManager
 import org.dynmap.common.DynmapPlayer
 import org.dynmap.common.DynmapServerInterface
 import org.dynmap.utils.MapChunkCache
+import org.spongepowered.api.Server
+import org.spongepowered.api.Sponge
+import org.spongepowered.api.service.ban.BanService
+import org.spongepowered.api.text.Text
+import org.spongepowered.api.text.serializer.TextSerializers
 import java.util.concurrent.Callable
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Future
 
-class SpongeServer : DynmapServerInterface() {
+class SpongeServer(private val server: Server, private val plugin: DynmapSponge) : DynmapServerInterface() {
+
     override fun scheduleServerTask(run: Runnable?, delay: Long) {
-        TODO("not implemented")
+        if (run == null) {
+            return
+        }
+
+        Sponge.getScheduler().createTaskBuilder().delayTicks(delay).execute(run).submit(plugin)
     }
 
-    override fun createMapChunkCache(w: DynmapWorld?, chunks: MutableList<DynmapChunk>?, blockdata: Boolean, highesty: Boolean, biome: Boolean, rawbiome: Boolean): MapChunkCache {
-        TODO("not implemented")
+    override fun createMapChunkCache(w: DynmapWorld?,
+                                     chunks: MutableList<DynmapChunk>?,
+                                     blockdata: Boolean,
+                                     highesty: Boolean,
+                                     biome: Boolean,
+                                     rawbiome: Boolean): MapChunkCache {
+
     }
 
     override fun reload() {
-        TODO("not implemented")
+        // TODO not atm
     }
 
-    override fun getWorldByName(wname: String?): DynmapWorld {
-        TODO("not implemented")
+    override fun getWorldByName(wname: String?): SpongeWorld? {
+        if (wname == null) {
+            return null
+        }
+        return plugin.getWorldByName(wname)
     }
 
-    override fun <T : Any?> callSyncMethod(task: Callable<T>?): Future<T> {
-        TODO("not implemented")
+    override fun <T : Any?> callSyncMethod(task: Callable<T>?): Future<T>? {
+        if (task == null) {
+            return null
+        }
+
+        val future = CompletableFuture<T>()
+        Sponge.getScheduler().createTaskBuilder().execute { t ->
+            future.complete(task.call())
+        }
+        return future
     }
 
     override fun getCurrentPlayers(): Int {
-        TODO("not implemented")
+        return server.onlinePlayers.size
     }
 
-    override fun getServerIP(): String {
-        TODO("not implemented")
+    override fun getServerIP(): String? {
+        return server.boundAddress.get?.address?.hostAddress
     }
 
-    override fun getOnlinePlayers(): Array<out DynmapPlayer> {
-        TODO("not implemented")
+    override fun getOnlinePlayers(): Array<out DynmapPlayer?> {
+        val array = kotlin.arrayOfNulls<SpongePlayer>(server.onlinePlayers.size)
+
+        for ((i, player) in server.onlinePlayers.withIndex()) {
+            array[i] = SpongePlayer(player)
+        }
+
+        return array
     }
 
     override fun stripChatColor(s: String?): String {
-        TODO("not implemented")
+        return TextSerializers.FORMATTING_CODE.stripCodes(s)
     }
 
     override fun requestEventNotification(type: DynmapListenerManager.EventType?): Boolean {
-        TODO("not implemented")
+        // TODO sponge dynmap api
     }
 
     override fun getMaxPlayers(): Int {
-        TODO("not implemented")
+        return server.maxPlayers
     }
 
-    override fun getPlayer(name: String?): DynmapPlayer {
-        TODO("not implemented")
+    override fun getPlayer(name: String?): DynmapPlayer? {
+        val player = server.getPlayer(name)
+        if (player.isPresent) {
+            return SpongePlayer(player.get())
+        }
+        return null
     }
 
     override fun getServerTPS(): Double {
-        TODO("not implemented")
+        return plugin.tps
     }
 
     override fun resetCacheStats() {
-        TODO("not implemented")
     }
 
     override fun sendWebChatEvent(source: String?, name: String?, msg: String?): Boolean {
-        TODO("not implemented")
+        // TODO sponge dynmap api
     }
 
     override fun getIPBans(): MutableSet<String>? {
-        TODO("not implemented")
+        return Sponge.getServiceManager().getRegistration(BanService::class.java).get?.provider?.ipBans?.map { it.address.hostAddress }?.toMutableSet()
     }
 
     override fun getCacheHitRate(): Double {
-        TODO("not implemented")
     }
 
     override fun getBiomeIDs(): Array<out String> {
-        TODO("not implemented")
     }
 
-    override fun getOfflinePlayer(name: String?): DynmapPlayer {
-        TODO("not implemented")
+    override fun getOfflinePlayer(name: String?): DynmapPlayer? {
+        // TODO don't..do this...
+        val profile = server.gameProfileManager[name].get()
+        if (profile.isFilled) {
+            val player = server.getPlayer(profile.uniqueId).get ?: return null
+            return SpongePlayer(player)
+        }
+        return null
     }
 
-    override fun checkPlayerPermissions(player: String?, perms: MutableSet<String>?): MutableSet<String>? {
-        TODO("not implemented")
+    override fun checkPlayerPermissions(name: String?, perms: MutableSet<String>?): MutableSet<String>? {
+        val player = server.getPlayer(name).get ?: return mutableSetOf()
+        val banService = Sponge.getServiceManager().getRegistration(BanService::class.java).get?.provider ?: return mutableSetOf()
+
+        val profile = server.gameProfileManager[player.uniqueId].get()
+        if (banService.isBanned(profile)) {
+            return mutableSetOf()
+        }
+
+        // TODO
     }
 
     override fun getBlockIDAt(wname: String?, x: Int, y: Int, z: Int): Int {
-        TODO("not implemented")
+        return 0 // TODO
     }
 
     override fun broadcastMessage(msg: String?) {
-        TODO("not implemented")
+        server.broadcastChannel.send(Text.of(msg))
     }
 
     override fun checkPlayerPermission(player: String?, perm: String?): Boolean {
-        TODO("not implemented")
     }
 
     override fun getServerName(): String {
-        TODO("not implemented")
     }
 
     override fun isPlayerBanned(pid: String?): Boolean {
-        TODO("not implemented")
+        val banService = Sponge.getServiceManager().getRegistration(BanService::class.java).get?.provider ?: return false
+        val profile = server.gameProfileManager[pid].get()
+        return banService.isBanned(profile)
     }
 }
