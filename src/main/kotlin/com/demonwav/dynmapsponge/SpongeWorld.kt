@@ -11,7 +11,7 @@ import org.spongepowered.api.data.property.block.SkyLuminanceProperty
 import org.spongepowered.api.world.DimensionTypes
 import org.spongepowered.api.world.World
 
-class SpongeWorld(val world: World) : DynmapWorld(world.name, Sponge.getServer().chunkLayout.spaceSize.y, world.properties.sealevel/*todo*/) {
+class SpongeWorld(var world: World) : DynmapWorld(world.name, Sponge.getServer().chunkLayout.spaceSize.y, world.properties.sealevel/*todo*/) {
 
     override fun getLightLevel(x: Int, y: Int, z: Int): Int {
         return world.getLocation(x, y, z).getProperty(LightEmissionProperty::class.java).get?.value ?: 0
@@ -73,6 +73,10 @@ class SpongeWorld(val world: World) : DynmapWorld(world.name, Sponge.getServer()
     override fun getSpawnLocation(): DynmapLocation {
         val l = world.spawnLocation
         return DynmapLocation(world.name, l.x, l.y, l.z)
+    }
+
+    fun setWorldLoaded(world: World) {
+        this.world = world
     }
 
     override fun setWorldUnloaded() {
