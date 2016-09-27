@@ -19,7 +19,6 @@
 package com.demonwav.dynmapsponge
 
 import com.demonwav.dynmapsponge.listeners.PlayerListeners
-import com.demonwav.dynmapsponge.get
 import com.demonwav.dynmapsponge.util.getBiomeBaseHumidity
 import com.demonwav.dynmapsponge.util.getBiomeBaseIdString
 import com.demonwav.dynmapsponge.util.getBiomeBaseList
@@ -201,7 +200,7 @@ class DynmapSponge : DynmapCommonAPI {
     }
 
     fun createListeners() {
-        PlayerListeners(this)
+        Sponge.getEventManager().registerListeners(PlayerListeners(this), this)
     }
 
     private fun processTick() {
@@ -217,84 +216,42 @@ class DynmapSponge : DynmapCommonAPI {
         core.serverTick(tps)
     }
 
-    // Lots of stuff to implement :d
-    override fun getMarkerAPI(): MarkerAPI {
-        TODO("not implemented")
-    }
-
-    override fun sendBroadcastToWeb(sender: String?, msg: String?): Boolean {
-        TODO("not implemented")
-    }
-
+    // Dynmap common API (just pass-through to core)
+    override fun getMarkerAPI(): MarkerAPI = core.markerAPI
+    override fun sendBroadcastToWeb(sender: String?, msg: String?) = core.sendBroadcastToWeb(sender, msg)
+    override fun markerAPIInitialized() = core.markerAPIInitialized()
+    override fun getPlayerVisbility(player: String?) = core.getPlayerVisbility(player)
+    override fun setDisableChatToWebProcessing(disable: Boolean) = core.setDisableChatToWebProcessing(disable)
+    override fun testIfPlayerInfoProtected() = core.testIfPlayerInfoProtected()
+    override fun testIfPlayerVisibleToPlayer(player: String?, player_to_see: String?) = core.testIfPlayerVisibleToPlayer(player, player_to_see)
+    override fun getPauseFullRadiusRenders() = core.pauseFullRadiusRenders
+    override fun getPauseUpdateRenders() = core.pauseUpdateRenders
+    override fun getDynmapCoreVersion(): String = core.dynmapCoreVersion
+    override fun triggerRenderOfBlock(wid: String?, x: Int, y: Int, z: Int) = core.triggerRenderOfBlock(wid, x, y, z)
+    override fun triggerRenderOfVolume(wid: String?, minx: Int, miny: Int, minz: Int, maxx: Int, maxy: Int, maxz: Int) =
+        core.triggerRenderOfVolume(wid, minx, miny, minz, maxx, maxy, maxz)
     override fun assertPlayerInvisibility(player: String?, is_invisible: Boolean, plugin_id: String?) {
-        TODO("not implemented")
+        core.assertPlayerInvisibility(player, is_invisible, plugin_id)
     }
-
-    override fun markerAPIInitialized(): Boolean {
-        TODO("not implemented")
-    }
-
-    override fun postPlayerMessageToWeb(playerid: String?, playerdisplay: String?, message: String?) {
-        TODO("not implemented")
-    }
-
-    override fun getPlayerVisbility(player: String?): Boolean {
-        TODO("not implemented")
-    }
-
-    override fun setDisableChatToWebProcessing(disable: Boolean): Boolean {
-        TODO("not implemented")
-    }
-
-    override fun testIfPlayerInfoProtected(): Boolean {
-        TODO("not implemented")
-    }
-
-    override fun testIfPlayerVisibleToPlayer(player: String?, player_to_see: String?): Boolean {
-        TODO("not implemented")
-    }
-
-    override fun getPauseFullRadiusRenders(): Boolean {
-        TODO("not implemented")
-    }
-
     override fun setPauseUpdateRenders(dopause: Boolean) {
-        TODO("not implemented")
+        core.pauseUpdateRenders = dopause
     }
-
+    override fun postPlayerMessageToWeb(playerid: String?, playerdisplay: String?, message: String?) {
+        core.postPlayerMessageToWeb(playerid, playerdisplay, message)
+    }
     override fun setPlayerVisiblity(player: String?, is_visible: Boolean) {
-        TODO("not implemented")
+        core.setPlayerVisiblity(player, is_visible)
     }
-
     override fun setPauseFullRadiusRenders(dopause: Boolean) {
-        TODO("not implemented")
+        core.pauseFullRadiusRenders = dopause
     }
-
     override fun processSignChange(blkid: Int, world: String?, x: Int, y: Int, z: Int, lines: Array<out String>?, playerid: String?) {
-        TODO("not implemented")
+        core.processSignChange(blkid, world, x, y, z, lines, playerid)
     }
-
     override fun assertPlayerVisibility(player: String?, is_visible: Boolean, plugin_id: String?) {
-        TODO("not implemented")
+        core.assertPlayerVisibility(player, is_visible, plugin_id)
     }
-
-    override fun getPauseUpdateRenders(): Boolean {
-        TODO("not implemented")
-    }
-
     override fun postPlayerJoinQuitToWeb(playerid: String?, playerdisplay: String?, isjoin: Boolean) {
-        TODO("not implemented")
-    }
-
-    override fun triggerRenderOfVolume(wid: String?, minx: Int, miny: Int, minz: Int, maxx: Int, maxy: Int, maxz: Int): Int {
-        TODO("not implemented")
-    }
-
-    override fun getDynmapCoreVersion(): String {
-        TODO("not implemented")
-    }
-
-    override fun triggerRenderOfBlock(wid: String?, x: Int, y: Int, z: Int): Int {
-        TODO("not implemented")
+        core.postPlayerJoinQuitToWeb(playerid, playerdisplay, isjoin)
     }
 }
