@@ -133,7 +133,7 @@ class DynmapSponge : DynmapCommonAPI {
         core.setPluginVersion(version, "Sponge")
         core.setMinecraftVersion(mcVer)
         core.dataFolder = defaultConfig.toFile()
-        core.server = SpongeServer()
+        core.server = SpongeServer(Sponge.getServer(), this)
         // SpongeBlocks functions
         core.blockNames = getBlockNames()
         core.blockMaterialMap = getBlockMaterialMap()
