@@ -18,24 +18,57 @@
 
 package com.demonwav.dynmapsponge.util
 
+import net.minecraft.block.Block
+import net.minecraft.block.material.Material
 import org.spongepowered.api.Sponge
 import org.spongepowered.api.world.biome.BiomeType
 
-fun getBlockNames(): Array<String> {
-    TODO()
-}
+object SpongeHelper {
+    // Ensure ordering stays the same
+    private lateinit var orderedList: List<BiomeType>
 
-fun getBlockMaterialMap(): IntArray {
-    TODO()
-}
+    fun init() {
+        orderedList = Sponge.getRegistry().getAllOf(BiomeType::class.java).toList()
+    }
 
-// Ensure ordering stays the same
-val orderedList = Sponge.getRegistry().getAllOf(BiomeType::class.java).toList()
+    fun getBlockNames(): Array<String?> {
+        return Array(4096) { i -> getBlockUnlocalizedName(Block.getBlockById(i)) }
+    }
 
-fun getBiomeNames(): Array<String> {
-    return orderedList.map { it.name }.toTypedArray()
-}
+    private fun getBlockUnlocalizedName(b: Block?): String? {
+        var s = b?.unlocalizedName
+        if (s?.startsWith("tile.") ?: false) {
+            s = s?.substring(5)
+        }
+        return s
+    }
 
-fun getBiomeBaseList(): Collection<BiomeType> {
-    return orderedList
+    fun getBlockMaterialMap(): IntArray {
+        val map = IntArray(4096) { -1 }
+        val mats = arrayListOf<Material>()
+
+        for (i in map.indices) {
+            val b = Block.getBlockById(i)
+            if (b != null) {
+                val mat = b.blockState.baseState.material
+                if (mat != null) {
+                    map[i] = mats.indexOf(mat)
+                    if (map[i] < 0) {
+                        map[i] = mats.size
+                        mats.add(mat)
+                    }
+                }
+            }
+        }
+
+        return map
+    }
+
+    fun getBiomeNames(): Array<String> {
+        return orderedList.map { it.name }.toTypedArray()
+    }
+
+    fun getBiomeBaseList(): Collection<BiomeType> {
+        return orderedList
+    }
 }

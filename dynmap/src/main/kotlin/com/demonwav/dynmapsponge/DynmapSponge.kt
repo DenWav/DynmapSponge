@@ -19,10 +19,7 @@
 package com.demonwav.dynmapsponge
 
 import com.demonwav.dynmapsponge.listeners.PlayerListeners
-import com.demonwav.dynmapsponge.util.getBiomeBaseList
-import com.demonwav.dynmapsponge.util.getBiomeNames
-import com.demonwav.dynmapsponge.util.getBlockMaterialMap
-import com.demonwav.dynmapsponge.util.getBlockNames
+import com.demonwav.dynmapsponge.util.SpongeHelper
 import com.google.inject.Inject
 import org.dynmap.DynmapCommonAPIListener
 import org.dynmap.DynmapCore
@@ -60,32 +57,31 @@ const val version = "1.0-SNAPSHOT"
 class DynmapSponge : DynmapAPI {
 
     @Inject
-    private lateinit var logger: Logger
+    lateinit var logger: Logger
 
     @Inject
     @DefaultConfig(sharedRoot = false)
-    private lateinit var defaultConfig: Path
+    lateinit var defaultConfig: Path
 
-    private lateinit var pluginContainer: PluginContainer
-    private lateinit var mapManager: MapManager
+    lateinit var pluginContainer: PluginContainer
+    lateinit var mapManager: MapManager
 
     val core = DynmapCore()
-    private val worldMap = HashMap<String, SpongeWorld>()
+    val worldMap = HashMap<String, SpongeWorld>()
 
-    private var lastWorld: World? = null
-    private var lastSpongeWorld: SpongeWorld? = null
+    var lastWorld: World? = null
+    var lastSpongeWorld: SpongeWorld? = null
 
     // TPS calculator
     var tps = 20.0
-    private var lastTick = 0L
-    private var perTickLimit = 0L
-    private var currentTickStartTime = 0L
-    private var avgTickLength = 50000000L
+    var lastTick = 0L
+    var perTickLimit = 0L
+    var currentTickStartTime = 0L
+    var avgTickLength = 50000000L
 
-    private var chunksInCurrentTick = 0
-    private var currentTick = 0L
-    private var prevTick = 0L
-
+    var chunksInCurrentTick = 0
+    var currentTick = 0L
+    var prevTick = 0L
 
     fun getWorldByName(name: String): SpongeWorld? {
         if ((lastWorld != null) && (lastSpongeWorld != null) && (lastWorld?.name == name)) {
@@ -124,6 +120,8 @@ class DynmapSponge : DynmapAPI {
     fun onServerStart(event: GameInitializationEvent) {
         val mcVer = Sponge.getPlatform().minecraftVersion.name
 
+        SpongeHelper.init()
+
         loadBiomes()
 
         createListeners()
@@ -134,9 +132,9 @@ class DynmapSponge : DynmapAPI {
         core.dataFolder = defaultConfig.toFile()
         core.server = SpongeServer(Sponge.getServer(), this)
         // SpongeBlocks functions
-        core.blockNames = getBlockNames()
-        core.blockMaterialMap = getBlockMaterialMap()
-        core.biomeNames = getBiomeNames()
+        core.blockNames = SpongeHelper.getBlockNames()
+        core.blockMaterialMap = SpongeHelper.getBlockMaterialMap()
+        core.biomeNames = SpongeHelper.getBiomeNames()
 
         // enable core
         if (!core.enableCore()) {
@@ -173,7 +171,7 @@ class DynmapSponge : DynmapAPI {
             BiomeMap(i, "BIOME_$i")
         }
 
-        val biomeList = getBiomeBaseList()
+        val biomeList = SpongeHelper.getBiomeBaseList()
 
         for ((i, biomeBase) in biomeList.withIndex()) {
             val temp = biomeBase.temperature
