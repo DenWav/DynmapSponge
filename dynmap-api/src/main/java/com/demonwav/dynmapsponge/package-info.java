@@ -16,26 +16,7 @@
  * limitations under the License.
  */
 
-package com.demonwav.dynmapsponge.util
+@NonnullByDefault
+package com.demonwav.dynmapsponge;
 
-import org.spongepowered.api.Sponge
-import org.spongepowered.api.world.biome.BiomeType
-
-fun getBlockNames(): Array<String> {
-    TODO()
-}
-
-fun getBlockMaterialMap(): IntArray {
-    TODO()
-}
-
-// Ensure ordering stays the same
-val orderedList = Sponge.getRegistry().getAllOf(BiomeType::class.java).toList()
-
-fun getBiomeNames(): Array<String> {
-    return orderedList.map { it.name }.toTypedArray()
-}
-
-fun getBiomeBaseList(): Collection<BiomeType> {
-    return orderedList
-}
+import org.spongepowered.api.util.annotation.NonnullByDefault;

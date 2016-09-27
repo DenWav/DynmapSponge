@@ -30,7 +30,7 @@ class PlayerListeners(private val plugin: DynmapSponge) {
     fun onPlayerLogin(event: ClientConnectionEvent.Join) {
         val player = SpongePlayer(event.targetEntity)
         // Give time for other plugins to interact with player
-        Sponge.getScheduler().createTaskBuilder().delayTicks(2).execute { task ->
+        Sponge.getScheduler().createTaskBuilder().delayTicks(2).execute { ->
             plugin.core.listenerManager.processPlayerEvent(EventType.PLAYER_JOIN, player)
         }.submit(plugin)
     }

@@ -20,15 +20,19 @@ buildscript {
     ext.kotlinVersion = "1.0.4"
 
     repositories {
+        jcenter()
         mavenCentral()
         maven {
             url "https://plugins.gradle.org/m2/"
+        }
+        maven {
+            url "http://files.minecraftforge.net/maven/"
         }
     }
 
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
-        classpath "gradle.plugin.com.qixalite:SpongeStart:1.5.2"
+        classpath "net.minecraftforge.gradle:ForgeGradle:2.2-SNAPSHOT"
         classpath "gradle.plugin.org.spongepowered:spongegradle:0.7"
         classpath "com.github.jengelman.gradle.plugins:shadow:1.2.3"
     }
@@ -36,7 +40,7 @@ buildscript {
 
 apply plugin: "kotlin"
 apply plugin: "org.spongepowered.plugin"
-apply plugin: "com.qixalite.spongestart"
+apply plugin: "net.minecraftforge.gradle.tweaker-server"
 apply plugin: "com.github.johnrengelman.shadow"
 
 repositories {
@@ -54,12 +58,11 @@ dependencies {
 
 sponge.plugin.id = pluginId
 
-spongestart {
-    eula true
-
-    //optional configs
-    spongeVanillaBuild "LATEST"
-    vanillaServerFolder project.file("run/vanilla").getAbsolutePath()
+minecraft {
+//    version = "1.10.2"
+    version = "1.10.2-12.18.1.2011"
+    mappings = "snapshot_20160927"
+    runDir = "run"
 }
 
 jar {

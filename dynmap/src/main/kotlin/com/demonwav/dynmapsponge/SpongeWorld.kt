@@ -95,6 +95,7 @@ class SpongeWorld(var world: World) : DynmapWorld(world.name, Sponge.getServer()
 
     fun setWorldLoaded(world: World) {
         this.world = world
+        Sponge.getServer().loadWorld(world.uniqueId)
     }
 
     override fun setWorldUnloaded() {

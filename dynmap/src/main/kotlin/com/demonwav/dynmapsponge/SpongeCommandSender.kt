@@ -29,7 +29,8 @@ open class SpongeCommandSender(val source: CommandSource) : DynmapCommandSender 
     }
 
     override fun isOp(): Boolean {
-        return source.hasPermission("dynmap.op")
+        // Console is op
+        return true
     }
 
     override fun isConnected(): Boolean {

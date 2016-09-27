@@ -18,8 +18,10 @@
 
 package com.demonwav.dynmapsponge
 
+import net.minecraft.block.Block
 import org.dynmap.DynmapChunk
 import org.dynmap.DynmapWorld
+import org.dynmap.common.BiomeMap
 import org.dynmap.common.DynmapListenerManager
 import org.dynmap.common.DynmapPlayer
 import org.dynmap.common.DynmapServerInterface
@@ -43,13 +45,13 @@ class SpongeServer(private val server: Server, private val plugin: DynmapSponge)
         Sponge.getScheduler().createTaskBuilder().delayTicks(delay).execute(run).submit(plugin)
     }
 
-    override fun createMapChunkCache(w: DynmapWorld?,
-                                     chunks: MutableList<DynmapChunk>?,
+    override fun createMapChunkCache(w: DynmapWorld,
+                                     chunks: MutableList<DynmapChunk>,
                                      blockdata: Boolean,
                                      highesty: Boolean,
                                      biome: Boolean,
                                      rawbiome: Boolean): MapChunkCache {
-
+        TODO()
     }
 
     override fun reload() {
@@ -69,7 +71,7 @@ class SpongeServer(private val server: Server, private val plugin: DynmapSponge)
         }
 
         val future = CompletableFuture<T>()
-        Sponge.getScheduler().createTaskBuilder().execute { t ->
+        Sponge.getScheduler().createTaskBuilder().execute { ->
             future.complete(task.call())
         }
         return future
@@ -84,12 +86,8 @@ class SpongeServer(private val server: Server, private val plugin: DynmapSponge)
     }
 
     override fun getOnlinePlayers(): Array<out DynmapPlayer?> {
-        val array = kotlin.arrayOfNulls<SpongePlayer>(server.onlinePlayers.size)
-
-        for ((i, player) in server.onlinePlayers.withIndex()) {
-            array[i] = SpongePlayer(player)
-        }
-
+        val list = server.onlinePlayers.toList()
+        val array = Array(list.size) { i -> SpongePlayer(list[i]) }
         return array
     }
 
@@ -99,6 +97,7 @@ class SpongeServer(private val server: Server, private val plugin: DynmapSponge)
 
     override fun requestEventNotification(type: DynmapListenerManager.EventType?): Boolean {
         // TODO sponge dynmap api
+        TODO()
     }
 
     override fun getMaxPlayers(): Int {
@@ -120,8 +119,10 @@ class SpongeServer(private val server: Server, private val plugin: DynmapSponge)
     override fun resetCacheStats() {
     }
 
-    override fun sendWebChatEvent(source: String?, name: String?, msg: String?): Boolean {
-        // TODO sponge dynmap api
+    override fun sendWebChatEvent(source: String, name: String, msg: String): Boolean {
+        val event = DynmapWebChatEvent(source, name, msg)
+        Sponge.getEventManager().post(event)
+        return event.isCancelled
     }
 
     override fun getIPBans(): MutableSet<String>? {
@@ -129,9 +130,12 @@ class SpongeServer(private val server: Server, private val plugin: DynmapSponge)
     }
 
     override fun getCacheHitRate(): Double {
+        TODO()
     }
 
     override fun getBiomeIDs(): Array<out String> {
+        val map = BiomeMap.values()
+        return Array(map.size) { i -> map[i].toString() }
     }
 
     override fun getOfflinePlayer(name: String?): DynmapPlayer? {
@@ -153,11 +157,11 @@ class SpongeServer(private val server: Server, private val plugin: DynmapSponge)
             return mutableSetOf()
         }
 
-        // TODO
+        TODO()
     }
 
     override fun getBlockIDAt(wname: String?, x: Int, y: Int, z: Int): Int {
-        return 0 // TODO
+        return Block.getIdFromBlock(Sponge.getServer().getWorld(wname).get().getBlock(x, y, z).type as Block)
     }
 
     override fun broadcastMessage(msg: String?) {
@@ -165,9 +169,11 @@ class SpongeServer(private val server: Server, private val plugin: DynmapSponge)
     }
 
     override fun checkPlayerPermission(player: String?, perm: String?): Boolean {
+        TODO()
     }
 
     override fun getServerName(): String {
+        return "SPONGE"
     }
 
     override fun isPlayerBanned(pid: String?): Boolean {

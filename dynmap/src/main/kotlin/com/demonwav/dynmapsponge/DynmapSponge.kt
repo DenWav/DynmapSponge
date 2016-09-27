@@ -19,10 +19,7 @@
 package com.demonwav.dynmapsponge
 
 import com.demonwav.dynmapsponge.listeners.PlayerListeners
-import com.demonwav.dynmapsponge.util.getBiomeBaseHumidity
-import com.demonwav.dynmapsponge.util.getBiomeBaseIdString
 import com.demonwav.dynmapsponge.util.getBiomeBaseList
-import com.demonwav.dynmapsponge.util.getBiomeBaseTemperature
 import com.demonwav.dynmapsponge.util.getBiomeNames
 import com.demonwav.dynmapsponge.util.getBlockMaterialMap
 import com.demonwav.dynmapsponge.util.getBlockNames
@@ -127,7 +124,7 @@ class DynmapSponge : DynmapAPI {
     fun onServerStart(event: GameInitializationEvent) {
         val mcVer = Sponge.getPlatform().minecraftVersion.name
 
-        loadExtraBiomes(mcVer)
+        loadBiomes()
 
         createListeners()
 
@@ -154,7 +151,7 @@ class DynmapSponge : DynmapAPI {
         lastTick = System.nanoTime()
         perTickLimit = core.maxTickUseMS.toLong() * 1000000L
 
-        Sponge.getScheduler().createTaskBuilder().intervalTicks(1).delayTicks(1).execute(this::processTick).submit(this)
+        Sponge.getScheduler().createTaskBuilder().intervalTicks(1).delayTicks(1).execute { -> processTick() }.submit(this)
 
         logger.info("Enabled")
     }
@@ -169,36 +166,25 @@ class DynmapSponge : DynmapAPI {
         logger.info("Disabled")
     }
 
-    fun loadExtraBiomes(mcVer: String) {
-        BiomeMap.loadWellKnownByVersion(mcVer)
+    fun loadBiomes() {
+        // First, clear out whatever dynmap creates by default
+        // We want our biomes to be the only real biomes available
+        for (i in 0..1024) {
+            BiomeMap(i, "BIOME_$i")
+        }
 
         val biomeList = getBiomeBaseList()
-        var count = 0
 
         for ((i, biomeBase) in biomeList.withIndex()) {
-            val temp = getBiomeBaseTemperature(biomeBase)
-            val humidity = getBiomeBaseHumidity(biomeBase)
+            val temp = biomeBase.temperature
+            val humidity = biomeBase.humidity
+            val id = biomeBase.id
 
-            val biomeMap = BiomeMap.byBiomeID(i)
-            if (biomeMap.isDefault) {
-                var id = getBiomeBaseIdString(biomeBase)
-
-                if (id == null) {
-                    id = "BIOME_" + i
-                }
-
-                val map = BiomeMap(i, id, temp, humidity)
-                logger.debug("Add custom biome [${map.toString()}]($i)")
-                count++
-            } else {
-                biomeMap.temperature = temp
-                biomeMap.rainfall = humidity
-            }
+            val map = BiomeMap(i, id, temp, humidity)
+            logger.debug("Add biome [${map.toString()}]($i)")
         }
 
-        if (count > 0) {
-            logger.info("Added $count custom biome mappings")
-        }
+        logger.info("Added ${biomeList.size} biome mappings")
     }
 
     fun createListeners() {

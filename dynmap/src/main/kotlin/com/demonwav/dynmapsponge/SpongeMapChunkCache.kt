@@ -18,25 +18,50 @@
 
 package com.demonwav.dynmapsponge
 
+import org.dynmap.DynmapChunk
 import org.dynmap.DynmapWorld
+import org.dynmap.common.BiomeMap
+import org.dynmap.utils.BlockStep
+import org.dynmap.utils.DynIntHashMap
 import org.dynmap.utils.MapChunkCache
 import org.dynmap.utils.MapIterator
 import org.dynmap.utils.VisibilityLimit
 import org.spongepowered.api.world.World
+import org.spongepowered.api.world.extent.BlockVolume
+import org.spongepowered.api.world.extent.ImmutableBlockVolume
+import java.util.ArrayList
+
+private var init = false
+private val nullBiomeMap = arrayOf(BiomeMap.NULL)
+private val unstep = arrayOf(BlockStep.X_MINUS, BlockStep.Y_MINUS, BlockStep.Z_MINUS, BlockStep.X_PLUS, BlockStep.Y_PLUS, BlockStep.Z_PLUS)
+
+private var biomeTobmap: Array<BiomeMap>? = null
 
 class SpongeMapChunkCache : MapChunkCache() {
 
     private lateinit var world: World
     private lateinit var spongeWorld: SpongeWorld
-
-    private var x_min: Int? = null
-    private var x_max: Int? = null
-    private var z_min: Int? = null
-    private var z_max: Int? = null
-
-    private var x_dim: Int? = null
+    private var nsect: Int = 0
+    private val chunks = ArrayList<DynmapChunk>()
+    private val iterator = chunks.iterator()
 
     var empty = true
+
+    private var snapcnt = 0
+    private lateinit var snaparray: Array<ImmutableBlockVolume>
+    private lateinit var snaptile: Array<DynIntHashMap>
+    private lateinit var sameNeighborBiomeCnt: Array<ByteArray>
+    private lateinit var biomeMap: Array<Array<BiomeMap>>
+    private lateinit var isSectionNotEmpty: Array<BooleanArray>
+    private lateinit var inhabitedTicks: LongArray
+
+    private var x_dim: Int? = null
+    private var x_min: Int? = null
+    private var x_max: Int? = null
+
+    private var z_min: Int? = null
+
+    private var z_max: Int? = null
 
     override fun loadChunks(maxToLoad: Int): Int {
         TODO("not implemented")

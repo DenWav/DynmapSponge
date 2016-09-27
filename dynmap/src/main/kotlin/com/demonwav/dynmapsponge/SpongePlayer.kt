@@ -44,6 +44,10 @@ class SpongePlayer(player: Player) : SpongeCommandSender(player), DynmapPlayer {
         return user.get(Keys.IS_SNEAKING).get == true
     }
 
+    override fun isOp(): Boolean {
+        return user.hasPermission("dynmap.op")
+    }
+
     override fun getName(): String {
         return user.name
     }

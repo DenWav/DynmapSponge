@@ -22,9 +22,7 @@ import org.spongepowered.api.event.Cancellable;
 import org.spongepowered.api.event.Event;
 import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.event.cause.NamedCause;
-import org.spongepowered.api.util.annotation.NonnullByDefault;
 
-@NonnullByDefault
 public class DynmapWebChatEvent implements Event, Cancellable {
     private boolean cancelled = false;
     private boolean processed = false;
