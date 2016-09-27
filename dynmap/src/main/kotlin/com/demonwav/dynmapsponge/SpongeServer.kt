@@ -23,6 +23,7 @@ import org.dynmap.DynmapChunk
 import org.dynmap.DynmapWorld
 import org.dynmap.common.BiomeMap
 import org.dynmap.common.DynmapListenerManager
+import org.dynmap.common.DynmapListenerManager.EventType
 import org.dynmap.common.DynmapPlayer
 import org.dynmap.common.DynmapServerInterface
 import org.dynmap.utils.MapChunkCache
@@ -31,11 +32,14 @@ import org.spongepowered.api.Sponge
 import org.spongepowered.api.service.ban.BanService
 import org.spongepowered.api.text.Text
 import org.spongepowered.api.text.serializer.TextSerializers
+import java.util.HashSet
 import java.util.concurrent.Callable
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Future
 
 class SpongeServer(private val server: Server, private val plugin: DynmapSponge) : DynmapServerInterface() {
+
+    private val registered = HashSet<DynmapListenerManager.EventType>()
 
     override fun scheduleServerTask(run: Runnable?, delay: Long) {
         if (run == null) {
@@ -96,9 +100,40 @@ class SpongeServer(private val server: Server, private val plugin: DynmapSponge)
         return TextSerializers.FORMATTING_CODE.stripCodes(s)
     }
 
-    override fun requestEventNotification(type: DynmapListenerManager.EventType?): Boolean {
-        // TODO sponge dynmap api
-        TODO()
+    override fun requestEventNotification(type: DynmapListenerManager.EventType): Boolean {
+        if (registered.contains(type)) {
+            return true
+        }
+
+        when (type) {
+            EventType.WORLD_LOAD, EventType.WORLD_UNLOAD -> {
+
+            }
+            EventType.WORLD_SPAWN_CHANGE -> {
+
+            }
+            EventType.PLAYER_JOIN, EventType.PLAYER_QUIT -> {
+
+            }
+            EventType.PLAYER_BED_LEAVE -> {
+
+            }
+            EventType.PLAYER_CHAT -> {
+
+            }
+            EventType.BLOCK_BREAK -> {
+
+            }
+            EventType.SIGN_CHANGE -> {
+
+            }
+            else -> {
+                plugin.logger.error("Unhandled event type: $type")
+                return false
+            }
+        }
+        registered.add(type)
+        return true
     }
 
     override fun getMaxPlayers(): Int {

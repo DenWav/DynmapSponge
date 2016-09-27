@@ -25,7 +25,7 @@ import org.spongepowered.api.Sponge
 import org.spongepowered.api.event.Listener
 import org.spongepowered.api.event.network.ClientConnectionEvent
 
-class PlayerListeners(private val plugin: DynmapSponge) {
+class PlayerJoinAndQuitListeners(private val plugin: DynmapSponge) {
     @Listener
     fun onPlayerLogin(event: ClientConnectionEvent.Join) {
         val player = SpongePlayer(event.targetEntity)

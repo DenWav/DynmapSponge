@@ -18,7 +18,7 @@
 
 package com.demonwav.dynmapsponge
 
-import com.demonwav.dynmapsponge.listeners.PlayerListeners
+import com.demonwav.dynmapsponge.listeners.PlayerJoinAndQuitListeners
 import com.demonwav.dynmapsponge.util.SpongeHelper
 import com.google.inject.Inject
 import org.dynmap.DynmapCommonAPIListener
@@ -194,7 +194,7 @@ class DynmapSponge : DynmapAPI {
     }
 
     fun createListeners() {
-        Sponge.getEventManager().registerListeners(PlayerListeners(this), this)
+        Sponge.getEventManager().registerListeners(PlayerJoinAndQuitListeners(this), this)
     }
 
     private fun processTick() {
