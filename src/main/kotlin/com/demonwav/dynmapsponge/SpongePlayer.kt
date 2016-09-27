@@ -21,8 +21,10 @@ package com.demonwav.dynmapsponge
 import org.dynmap.DynmapLocation
 import org.dynmap.common.DynmapPlayer
 import org.spongepowered.api.data.key.Keys
+import org.spongepowered.api.data.property.item.UseLimitProperty
 import org.spongepowered.api.entity.living.player.Player
 import org.spongepowered.api.entity.living.player.User
+import org.spongepowered.api.item.inventory.ItemStack
 import org.spongepowered.api.text.serializer.TextSerializers
 import java.net.InetSocketAddress
 import java.util.HashMap
@@ -39,7 +41,7 @@ class SpongePlayer(player: Player) : SpongeCommandSender(player), DynmapPlayer {
     }
 
     override fun isSneaking(): Boolean {
-        TODO("not implemented")
+        return user.get(Keys.IS_SNEAKING).get == true
     }
 
     override fun getName(): String {
@@ -59,7 +61,50 @@ class SpongePlayer(player: Player) : SpongeCommandSender(player), DynmapPlayer {
     }
 
     override fun getArmorPoints(): Int {
-        TODO("not implemented")
+        if (player == null) {
+            return 0
+        }
+
+        var currentDurability = 0
+        var baseDurability = 0
+        var baseArmorPoints = 0
+
+        val items = arrayOfNulls<ItemStack>(4)
+        items[0] = player!!.boots.get
+        items[1] = player!!.leggings.get
+        items[2] = player!!.chestplate.get
+        items[3] = player!!.helmet.get
+
+        val armorPoints = intArrayOf(3, 6, 8, 3)
+
+        for ((i, item) in items.withIndex()) {
+            if (item == null) {
+                continue
+            }
+
+            val durability = item.get(Keys.ITEM_DURABILITY).get ?: 0
+            var max = item.item.getDefaultProperty(UseLimitProperty::class.java).get?.value ?: 0
+
+            if (max <= 0) {
+                continue
+            }
+
+            if (i == 2) {
+                max += 1
+            } else {
+                max -= 3
+            }
+
+            baseDurability += max
+            currentDurability += max - durability
+            baseArmorPoints += armorPoints[i]
+        }
+
+        return if (baseDurability > 0) {
+            ((baseArmorPoints - 1) * currentDurability) / baseDurability + 1
+        } else {
+            0
+        }
     }
 
     override fun getWorld(): String? {
