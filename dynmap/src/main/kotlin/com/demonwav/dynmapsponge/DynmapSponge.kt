@@ -118,13 +118,24 @@ class DynmapSponge : DynmapAPI {
 
     @Listener
     fun onServerStart(event: GameInitializationEvent) {
-        val mcVer = Sponge.getPlatform().minecraftVersion.name
-
         SpongeHelper.init()
 
         loadBiomes()
 
         createListeners()
+
+        Sponge.getScheduler().createTaskBuilder().intervalTicks(1).delayTicks(1).execute { -> processTick() }.submit(this)
+
+        logger.info("Enabled")
+    }
+
+    @Listener
+    fun onServerStop(event: GameStoppingEvent) {
+        disableCore()
+    }
+
+    fun enableCore() {
+        val mcVer = Sponge.getPlatform().minecraftVersion.name
 
         core.pluginJarFile
         core.setPluginVersion(version, "Sponge")
@@ -149,18 +160,15 @@ class DynmapSponge : DynmapAPI {
         lastTick = System.nanoTime()
         perTickLimit = core.maxTickUseMS.toLong() * 1000000L
 
-        Sponge.getScheduler().createTaskBuilder().intervalTicks(1).delayTicks(1).execute { -> processTick() }.submit(this)
-
         logger.info("Enabled")
     }
 
-    @Listener
-    fun onServerStop(event: GameStoppingEvent) {
+    fun disableCore() {
         DynmapCommonAPIListener.apiTerminated()
 
         core.disableCore()
 
-        // TODO sscache cleanup
+        // TODO sscache
         logger.info("Disabled")
     }
 

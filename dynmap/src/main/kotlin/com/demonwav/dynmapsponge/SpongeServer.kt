@@ -55,7 +55,8 @@ class SpongeServer(private val server: Server, private val plugin: DynmapSponge)
     }
 
     override fun reload() {
-        // TODO not atm
+        plugin.disableCore()
+        plugin.enableCore()
     }
 
     override fun getWorldByName(wname: String?): SpongeWorld? {
