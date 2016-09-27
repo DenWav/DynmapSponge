@@ -4,14 +4,14 @@ import org.dynmap.DynmapChunk
 import org.dynmap.DynmapLocation
 import org.dynmap.DynmapWorld
 import org.dynmap.utils.MapChunkCache
-import org.spongepowered.api.Server
+import org.spongepowered.api.Sponge
 import org.spongepowered.api.block.BlockTypes
 import org.spongepowered.api.data.property.block.LightEmissionProperty
 import org.spongepowered.api.data.property.block.SkyLuminanceProperty
 import org.spongepowered.api.world.DimensionTypes
 import org.spongepowered.api.world.World
 
-class SpongeWorld(val world: World, val server: Server) : DynmapWorld(world.name, server.chunkLayout.spaceSize.y, world.properties.sealevel/*todo*/) {
+class SpongeWorld(val world: World) : DynmapWorld(world.name, Sponge.getServer().chunkLayout.spaceSize.y, world.properties.sealevel/*todo*/) {
 
     override fun getLightLevel(x: Int, y: Int, z: Int): Int {
         return world.getLocation(x, y, z).getProperty(LightEmissionProperty::class.java).get?.value ?: 0
@@ -33,7 +33,7 @@ class SpongeWorld(val world: World, val server: Server) : DynmapWorld(world.name
     }
 
     override fun getHighestBlockYAt(x: Int, z: Int): Int {
-        for (y in server.chunkLayout.spaceMax.y..server.chunkLayout.spaceMin.y) {
+        for (y in Sponge.getServer().chunkLayout.spaceMax.y..Sponge.getServer().chunkLayout.spaceMin.y) {
             if (world.getBlockType(x, y, z) != BlockTypes.AIR) {
                 return y
             }
@@ -76,7 +76,7 @@ class SpongeWorld(val world: World, val server: Server) : DynmapWorld(world.name
     }
 
     override fun setWorldUnloaded() {
-        server.unloadWorld(world)
+        Sponge.getServer().unloadWorld(world)
     }
 
 }
