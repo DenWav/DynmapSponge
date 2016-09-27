@@ -16,16 +16,32 @@
  * limitations under the License.
  */
 
-package com.demonwav.dynmapsponge
+package com.demonwav.dynmapsponge.util
 
-import java.util.Optional
+fun getBlockNames(): Array<String> {
+    TODO()
+}
 
-/**
- * Due to Kotlin's nullability system, it's best to just get null from an Optional and
- * use Kotlin's system instead. Rather than always calling #orElse(null), this is a
- * more convenient way of calling that method.
- */
-val <V> Optional<V>.get: V?
-    get() {
-        return orElse(null)
-    }
+fun getBlockMaterialMap(): IntArray {
+    TODO()
+}
+
+fun getBiomeNames(): Array<String> {
+    TODO()
+}
+
+fun getBiomeBaseList(): Array<Any> {
+    TODO()
+}
+
+fun getBiomeBaseTemperature(biomeBase: Any): Double {
+    TODO()
+}
+
+fun getBiomeBaseHumidity(biomeBase: Any): Double {
+    TODO()
+}
+
+fun getBiomeBaseIdString(biomeBase: Any): String? {
+    TODO()
+}
