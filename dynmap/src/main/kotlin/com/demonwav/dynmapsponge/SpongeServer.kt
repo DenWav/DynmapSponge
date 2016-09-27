@@ -173,7 +173,7 @@ class SpongeServer(private val server: Server, private val plugin: DynmapSponge)
     }
 
     override fun getServerName(): String {
-        return "SPONGE"
+        return "Sponge"
     }
 
     override fun isPlayerBanned(pid: String?): Boolean {

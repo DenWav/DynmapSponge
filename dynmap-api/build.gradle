@@ -50,7 +50,7 @@ repositories {
 }
 
 dependencies {
-    compile "org.spongepowered:spongeapi:5.0.0-SNAPSHOT"
+    compileOnly "org.spongepowered:spongeapi:5.0.0-SNAPSHOT"
     compile "us.dynmap:DynmapCoreAPI:$dynmapVersion"
 }
 
