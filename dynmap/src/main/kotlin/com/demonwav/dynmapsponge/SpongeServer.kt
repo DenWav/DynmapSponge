@@ -184,16 +184,16 @@ class SpongeServer(private val server: Server, private val plugin: DynmapSponge)
         return null
     }
 
-    override fun checkPlayerPermissions(name: String?, perms: MutableSet<String>?): MutableSet<String>? {
+    override fun checkPlayerPermissions(name: String, perms: Set<String>): Set<String>? {
         val player = server.getPlayer(name).get ?: return mutableSetOf()
-        val banService = Sponge.getServiceManager().getRegistration(BanService::class.java).get?.provider ?: return mutableSetOf()
+        val banService = Sponge.getServiceManager().getRegistration(BanService::class.java).get?.provider ?: return setOf()
 
         val profile = server.gameProfileManager[player.uniqueId].get()
         if (banService.isBanned(profile)) {
-            return mutableSetOf()
+            return setOf()
         }
 
-        TODO()
+        return perms.filter { player.hasPermission(it) }.toSet()
     }
 
     override fun getBlockIDAt(wname: String?, x: Int, y: Int, z: Int): Int {
@@ -204,8 +204,12 @@ class SpongeServer(private val server: Server, private val plugin: DynmapSponge)
         server.broadcastChannel.send(Text.of(msg))
     }
 
-    override fun checkPlayerPermission(player: String?, perm: String?): Boolean {
-        TODO()
+    override fun checkPlayerPermission(name: String?, perm: String?): Boolean {
+        val player = Sponge.getServer().getPlayer(name).get ?: return false
+        if (!player.isOnline) {
+            return false
+        }
+        return player.hasPermission(perm)
     }
 
     override fun getServerName(): String {
