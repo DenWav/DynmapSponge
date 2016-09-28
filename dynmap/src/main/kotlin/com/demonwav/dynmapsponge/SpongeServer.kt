@@ -175,7 +175,6 @@ class SpongeServer(private val server: Server, private val plugin: DynmapSponge)
     }
 
     override fun getOfflinePlayer(name: String?): DynmapPlayer? {
-        // TODO don't..do this...
         val profile = server.gameProfileManager[name].get()
         if (profile.isFilled) {
             val player = server.getPlayer(profile.uniqueId).get ?: return null
