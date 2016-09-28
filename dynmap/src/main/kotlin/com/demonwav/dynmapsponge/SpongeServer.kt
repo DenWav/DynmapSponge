@@ -27,8 +27,16 @@ import org.dynmap.common.DynmapListenerManager.EventType
 import org.dynmap.common.DynmapPlayer
 import org.dynmap.common.DynmapServerInterface
 import org.dynmap.utils.MapChunkCache
-import org.spongepowered.api.Server
 import org.spongepowered.api.Sponge
+import org.spongepowered.api.data.manipulator.mutable.tileentity.SignData
+import org.spongepowered.api.entity.living.player.Player
+import org.spongepowered.api.event.Listener
+import org.spongepowered.api.event.action.SleepingEvent
+import org.spongepowered.api.event.block.ChangeBlockEvent
+import org.spongepowered.api.event.block.tileentity.ChangeSignEvent
+import org.spongepowered.api.event.filter.Getter
+import org.spongepowered.api.event.filter.cause.First
+import org.spongepowered.api.event.message.MessageChannelEvent
 import org.spongepowered.api.service.ban.BanService
 import org.spongepowered.api.text.Text
 import org.spongepowered.api.text.serializer.TextSerializers
@@ -37,7 +45,7 @@ import java.util.concurrent.Callable
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Future
 
-class SpongeServer(private val server: Server, private val plugin: DynmapSponge) : DynmapServerInterface() {
+class SpongeServer(private val plugin: DynmapSponge) : DynmapServerInterface() {
 
     private val registered = HashSet<DynmapListenerManager.EventType>()
 
@@ -83,15 +91,15 @@ class SpongeServer(private val server: Server, private val plugin: DynmapSponge)
     }
 
     override fun getCurrentPlayers(): Int {
-        return server.onlinePlayers.size
+        return Sponge.getServer().onlinePlayers.size
     }
 
     override fun getServerIP(): String? {
-        return server.boundAddress.get?.address?.hostAddress
+        return Sponge.getServer().boundAddress.get?.address?.hostAddress
     }
 
     override fun getOnlinePlayers(): Array<out DynmapPlayer?> {
-        val list = server.onlinePlayers.toList()
+        val list = Sponge.getServer().onlinePlayers.toList()
         val array = Array(list.size) { i -> SpongePlayer(list[i]) }
         return array
     }
@@ -110,22 +118,70 @@ class SpongeServer(private val server: Server, private val plugin: DynmapSponge)
 
             }
             EventType.WORLD_SPAWN_CHANGE -> {
-
+                // TODO
             }
             EventType.PLAYER_JOIN, EventType.PLAYER_QUIT -> {
-
+                // Already handled
             }
             EventType.PLAYER_BED_LEAVE -> {
-
+                Sponge.getEventManager().registerListeners(plugin, object {
+                    @Listener
+                    fun onBedLeave(event: SleepingEvent.Finish, @Getter("getTargetEntity") player: Player) {
+                        val dynmapPlayer = SpongePlayer(player)
+                        plugin.core.listenerManager.processPlayerEvent(EventType.PLAYER_BED_LEAVE, dynmapPlayer)
+                    }
+                })
             }
             EventType.PLAYER_CHAT -> {
-
+                Sponge.getEventManager().registerListeners(plugin, object {
+                    @Listener
+                    fun onPlayerChat(event: MessageChannelEvent.Chat, @First player: Player, @Getter("getRawMessage") text: Text) {
+                        val dynmapPlayer = SpongePlayer(player)
+                        plugin.core.listenerManager.processChatEvent(EventType.PLAYER_CHAT, dynmapPlayer, text.toPlain())
+                    }
+                })
             }
             EventType.BLOCK_BREAK -> {
+                Sponge.getEventManager().registerListeners(plugin, object {
+                    @Listener
+                    fun onBlockBreak(event: ChangeBlockEvent.Break, @First player: Player) {
+                        event.transactions.forEach { transaction ->
+                            val final = transaction.final
+                            val loc = final.location.get ?: return
+                            val block = loc.block.type as Block
 
+                            plugin.core.listenerManager.processBlockEvent(
+                                EventType.BLOCK_BREAK,
+                                Block.getIdFromBlock(block),
+                                loc.extent.name,
+                                loc.blockX,
+                                loc.blockY,
+                                loc.blockZ
+                            )
+                        }
+                    }
+                })
             }
             EventType.SIGN_CHANGE -> {
+                Sponge.getEventManager().registerListeners(plugin, object {
+                    @Listener
+                    fun onSignChange(event: ChangeSignEvent, @First player: Player, @Getter("getText") text: SignData) {
+                        val loc = event.targetTile.location
+                        val block = loc.block.type as Block
+                        val dynmapPlayer = SpongePlayer(player)
 
+                        plugin.core.listenerManager.processSignChangeEvent(
+                            EventType.SIGN_CHANGE,
+                            Block.getIdFromBlock(block),
+                            loc.extent.name,
+                            loc.blockX,
+                            loc.blockY,
+                            loc.blockZ,
+                            text.lines().map { it.toPlain() }.toTypedArray(),
+                            dynmapPlayer
+                        )
+                    }
+                })
             }
             else -> {
                 plugin.logger.error("Unhandled event type: $type")
@@ -137,11 +193,11 @@ class SpongeServer(private val server: Server, private val plugin: DynmapSponge)
     }
 
     override fun getMaxPlayers(): Int {
-        return server.maxPlayers
+        return Sponge.getServer().maxPlayers
     }
 
     override fun getPlayer(name: String?): DynmapPlayer? {
-        val player = server.getPlayer(name)
+        val player = Sponge.getServer().getPlayer(name)
         if (player.isPresent) {
             return SpongePlayer(player.get())
         }
@@ -175,19 +231,19 @@ class SpongeServer(private val server: Server, private val plugin: DynmapSponge)
     }
 
     override fun getOfflinePlayer(name: String?): DynmapPlayer? {
-        val profile = server.gameProfileManager[name].get()
+        val profile = Sponge.getServer().gameProfileManager[name].get()
         if (profile.isFilled) {
-            val player = server.getPlayer(profile.uniqueId).get ?: return null
+            val player = Sponge.getServer().getPlayer(profile.uniqueId).get ?: return null
             return SpongePlayer(player)
         }
         return null
     }
 
     override fun checkPlayerPermissions(name: String, perms: Set<String>): Set<String>? {
-        val player = server.getPlayer(name).get ?: return mutableSetOf()
+        val player = Sponge.getServer().getPlayer(name).get ?: return mutableSetOf()
         val banService = Sponge.getServiceManager().getRegistration(BanService::class.java).get?.provider ?: return setOf()
 
-        val profile = server.gameProfileManager[player.uniqueId].get()
+        val profile = Sponge.getServer().gameProfileManager[player.uniqueId].get()
         if (banService.isBanned(profile)) {
             return setOf()
         }
@@ -200,7 +256,7 @@ class SpongeServer(private val server: Server, private val plugin: DynmapSponge)
     }
 
     override fun broadcastMessage(msg: String?) {
-        server.broadcastChannel.send(Text.of(msg))
+        Sponge.getServer().broadcastChannel.send(Text.of(msg))
     }
 
     override fun checkPlayerPermission(name: String?, perm: String?): Boolean {
@@ -217,7 +273,7 @@ class SpongeServer(private val server: Server, private val plugin: DynmapSponge)
 
     override fun isPlayerBanned(pid: String?): Boolean {
         val banService = Sponge.getServiceManager().getRegistration(BanService::class.java).get?.provider ?: return false
-        val profile = server.gameProfileManager[pid].get()
+        val profile = Sponge.getServer().gameProfileManager[pid].get()
         return banService.isBanned(profile)
     }
 }

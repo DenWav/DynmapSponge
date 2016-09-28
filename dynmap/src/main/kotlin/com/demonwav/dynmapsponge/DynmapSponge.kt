@@ -141,7 +141,7 @@ class DynmapSponge : DynmapAPI {
         core.setPluginVersion(version, "Sponge")
         core.setMinecraftVersion(mcVer)
         core.dataFolder = defaultConfig.toFile()
-        core.server = SpongeServer(Sponge.getServer(), this)
+        core.server = SpongeServer(this)
         // SpongeBlocks functions
         core.blockNames = SpongeHelper.getBlockNames()
         core.blockMaterialMap = SpongeHelper.getBlockMaterialMap()
@@ -167,6 +167,8 @@ class DynmapSponge : DynmapAPI {
         DynmapCommonAPIListener.apiTerminated()
 
         core.disableCore()
+
+        Sponge.getEventManager().unregisterPluginListeners(this)
 
         // TODO sscache
         logger.info("Disabled")
